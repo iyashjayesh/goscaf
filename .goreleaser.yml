@@ -1,0 +1,80 @@
+project: gostart
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: gostart
+    main: ./main.go
+    binary: gostart
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -w -s -X main.version={{.Version}}
+
+archives:
+  - id: gostart
+    builds:
+      - gostart
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+      - "Merge branch"
+
+brews:
+  - name: gostart
+    repository:
+      owner: gostart-dev
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TOKEN }}"
+    description: "Enterprise-grade Go project scaffolder"
+    homepage: "https://github.com/iyashjayesh/gostart"
+    license: "MIT"
+    commit_author:
+      name: gorelease-bot
+      email: bot@gostart.dev
+    install: |
+      bin.install "gostart"
+    test: |
+      system "#{bin}/gostart", "--version"
+
+release:
+  github:
+    owner: gostart-dev
+    name: gostart
+  draft: false
+  prerelease: auto
