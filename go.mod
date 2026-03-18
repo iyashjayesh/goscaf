@@ -1,4 +1,4 @@
-module github.com/iyashjayesh/gostart
+module github.com/iyashjayesh/goscaf
 
 go 1.25.0
 

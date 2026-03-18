@@ -38,7 +38,7 @@ formatters:
       simplify: true
     goimports:
       local-prefixes:
-        - github.com/iyashjayesh/gostart
+        - github.com/iyashjayesh/goscaf
   exclusions:
     generated: lax
     paths:

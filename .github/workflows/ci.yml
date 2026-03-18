@@ -9,7 +9,10 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -61,4 +64,4 @@ jobs:
           cache: true
 
       - name: Build
-        run: CGO_ENABLED=0 go build -ldflags="-w -s" -o bin/gostart ./main.go
+        run: CGO_ENABLED=0 go build -ldflags="-w -s" -o bin/goscaf ./main.go

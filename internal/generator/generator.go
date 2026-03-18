@@ -11,8 +11,8 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/iyashjayesh/gostart/internal/config"
-	"github.com/iyashjayesh/gostart/internal/templates"
+	"github.com/iyashjayesh/goscaf/internal/config"
+	"github.com/iyashjayesh/goscaf/internal/templates"
 )
 
 // Generator orchestrates all file writes for a project.

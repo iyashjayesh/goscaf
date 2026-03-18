@@ -8,9 +8,9 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/iyashjayesh/gostart/internal/config"
-	"github.com/iyashjayesh/gostart/internal/generator"
-	"github.com/iyashjayesh/gostart/internal/prompt"
+	"github.com/iyashjayesh/goscaf/internal/config"
+	"github.com/iyashjayesh/goscaf/internal/generator"
+	"github.com/iyashjayesh/goscaf/internal/prompt"
 )
 
 var (

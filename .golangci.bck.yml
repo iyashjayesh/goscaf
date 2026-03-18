@@ -5,7 +5,7 @@ linters-settings:
   gofmt:
     simplify: true
   goimports:
-    local-prefixes: github.com/iyashjayesh/gostart
+    local-prefixes: github.com/iyashjayesh/goscaf
   revive:
     rules:
       - name: exported

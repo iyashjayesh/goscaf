@@ -1,13 +1,13 @@
 <div align="center">
 
-# 🚀 gostart
+# 🚀 goscaf
 
 **Enterprise-grade Go project scaffolder**
 
 [![Go Version](https://img.shields.io/badge/Go-1.25.0-00ADD8?style=flat&logo=go)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/iyashjayesh/gostart/actions/workflows/ci.yml/badge.svg)](https://github.com/iyashjayesh/gostart/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/iyashjayesh/gostart)](https://goreportcard.com/report/github.com/iyashjayesh/gostart)
+[![CI](https://github.com/iyashjayesh/goscaf/actions/workflows/ci.yml/badge.svg)](https://github.com/iyashjayesh/goscaf/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/iyashjayesh/goscaf)](https://goreportcard.com/report/github.com/iyashjayesh/goscaf)
 
 *Think `create-react-app`, but for Go services.*
 
@@ -15,9 +15,9 @@
 
 ---
 
-## What is gostart?
+## What is goscaf?
 
-`gostart` generates **opinionated, production-quality Go project boilerplate** via an interactive CLI. Stop copy-pasting skeleton code between projects. Start with:
+`goscaf` generates **opinionated, production-quality Go project boilerplate** via an interactive CLI. Stop copy-pasting skeleton code between projects. Start with:
 
 - ✅ Graceful shutdown with OS signal handling
 - ✅ Structured JSON logging (slog, zerolog, or zap)
@@ -33,18 +33,18 @@
 
 ### Go install
 ```bash
-go install github.com/iyashjayesh/gostart@latest
+go install github.com/iyashjayesh/goscaf@latest
 ```
 
 ### Homebrew (coming soon)
 ```bash
-brew install gostart-dev/tap/gostart
+brew install goscaf-dev/tap/goscaf
 ```
 
 ### From source
 ```bash
-git clone https://github.com/iyashjayesh/gostart.git
-cd gostart
+git clone https://github.com/iyashjayesh/goscaf.git
+cd goscaf
 make install
 ```
 
@@ -54,14 +54,11 @@ make install
 
 ### Interactive mode
 ```bash
-gostart init my-api
+goscaf init my-api
 ```
 
 Sample prompt flow:
 ```
- ██████╗  ██████╗ ███████╗████████╗ █████╗ ██████╗ ████████╗
-...
-
 ? Module name: (github.com/your-org/my-api)
 ? Go version: (1.25.0)
 ? HTTP framework: gin
@@ -110,8 +107,8 @@ Sample prompt flow:
 
 ### Non-interactive / CI mode
 ```bash
-gostart init my-api --defaults
-gostart init my-api --framework fiber --logger zap --redis --kafka --docker
+goscaf init my-api --defaults
+goscaf init my-api --framework fiber --logger zap --redis --kafka --docker
 ```
 
 ---
@@ -204,7 +201,7 @@ my-api/
 
 **Idiomatic Go.** Generated code uses standard patterns: `context` propagation, structured logging through `slog` as default, `os.Exit(1)` on unrecoverable errors, `signal.NotifyContext` for graceful shutdown.
 
-**Minimal opinions.** gostart picks sensible defaults but lets you override everything. Choose your framework, choose your logger, opt-in or out of every infrastructure component.
+**Minimal opinions.** goscaf picks sensible defaults but lets you override everything. Choose your framework, choose your logger, opt-in or out of every infrastructure component.
 
 **Production defaults from day one.** Every generated project includes: server timeouts, race-detected tests, a multi-stage distroless Docker build, and a CI pipeline that runs lint before merge.
 
@@ -214,8 +211,8 @@ my-api/
 
 ```bash
 # Clone and build
-git clone https://github.com/iyashjayesh/gostart.git
-cd gostart
+git clone https://github.com/iyashjayesh/goscaf.git
+cd goscaf
 make build
 
 # Run the smoke test
@@ -228,4 +225,4 @@ PRs welcome! Please open an issue first for major changes.
 
 ## License
 
-[MIT](LICENSE) © gostart contributors
+[MIT](LICENSE) © goscaf contributors

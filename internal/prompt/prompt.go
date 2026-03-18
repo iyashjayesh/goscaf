@@ -5,7 +5,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 
-	"github.com/iyashjayesh/gostart/internal/config"
+	"github.com/iyashjayesh/goscaf/internal/config"
 )
 
 // Run runs the interactive prompt flow and returns a populated ProjectConfig.

@@ -1,5 +1,5 @@
 build:
-	go build -o bin/gostart ./main.go
+	go build -o bin/goscaf ./main.go
 
 install:
 	go install ./...
@@ -17,9 +17,21 @@ tidy:
 	go mod tidy
 
 smoke-test: build
-	./bin/gostart init smoke-test-project --defaults
+	./bin/goscaf init smoke-test-project --defaults
 	ls smoke-test-project/
 	rm -rf smoke-test-project/
 	@echo "Smoke test passed!"
 
-.PHONY: build install run test lint tidy smoke-test
+fmt:
+	go fmt ./...
+
+clean:
+	rm -rf bin/
+	rm -rf coverage.out
+	rm -rf smoke-test-project/
+
+install-tools:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+
+.PHONY: build install run test lint tidy smoke-test fmt clean install-tools

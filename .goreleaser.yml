@@ -1,4 +1,4 @@
-project: gostart
+project: goscaf
 version: 2
 
 before:
@@ -6,9 +6,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: gostart
+  - id: goscaf
     main: ./main.go
-    binary: gostart
+    binary: goscaf
     goos:
       - linux
       - darwin
@@ -24,12 +24,12 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -w -s -X main.version={{.Version}}
+      - -w -s -X github.com/iyashjayesh/goscaf/cmd.Version={{.Version}}
 
 archives:
-  - id: gostart
+  - id: goscaf
     builds:
-      - gostart
+      - goscaf
     format: tar.gz
     format_overrides:
       - goos: windows
@@ -56,25 +56,25 @@ changelog:
       - "Merge branch"
 
 brews:
-  - name: gostart
+  - name: goscaf
     repository:
-      owner: gostart-dev
+      owner: goscaf-dev
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TOKEN }}"
     description: "Enterprise-grade Go project scaffolder"
-    homepage: "https://github.com/iyashjayesh/gostart"
+    homepage: "https://github.com/iyashjayesh/goscaf"
     license: "MIT"
     commit_author:
       name: gorelease-bot
-      email: bot@gostart.dev
+      email: bot@goscaf.dev
     install: |
-      bin.install "gostart"
+      bin.install "goscaf"
     test: |
-      system "#{bin}/gostart", "--version"
+      system "#{bin}/goscaf", "--version"
 
 release:
   github:
-    owner: gostart-dev
-    name: gostart
+    owner: goscaf-dev
+    name: goscaf
   draft: false
   prerelease: auto

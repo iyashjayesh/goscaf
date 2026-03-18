@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/iyashjayesh/gostart/internal/config"
+import "github.com/iyashjayesh/goscaf/internal/config"
 
 // MainGo is the template for cmd/main.go
 const MainGo = `package main

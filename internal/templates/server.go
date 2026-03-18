@@ -1,6 +1,6 @@
 package templates
 
-import "github.com/iyashjayesh/gostart/internal/config"
+import "github.com/iyashjayesh/goscaf/internal/config"
 
 // ServerGo returns the server.go template for the given framework.
 func ServerGo(framework config.Framework) string {
