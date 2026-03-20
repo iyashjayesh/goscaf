@@ -8,6 +8,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/iyashjayesh/goscaf/actions/workflows/ci.yml/badge.svg)](https://github.com/iyashjayesh/goscaf/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/iyashjayesh/goscaf)](https://goreportcard.com/report/github.com/iyashjayesh/goscaf)
+[![GoDoc](https://godoc.org/github.com/iyashjayesh/goscaf?status.svg)](https://pkg.go.dev/github.com/iyashjayesh/goscaf)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=iyashjayesh%2Fgoscaf%20&countColor=%23263759&style=flat)
 
 *Think `create-react-app`, but for Go services.*
 
@@ -19,13 +21,13 @@
 
 `goscaf` generates **opinionated, production-quality Go project boilerplate** via an interactive CLI. Stop copy-pasting skeleton code between projects. Start with:
 
-- ✅ Graceful shutdown with OS signal handling
-- ✅ Structured JSON logging (slog, zerolog, or zap)
-- ✅ Your choice of HTTP framework (gin, fiber, chi, echo, gorilla/mux)
-- ✅ Viper-powered config with `.env` support
-- ✅ Optional infra clients: Redis, Kafka, NATS
-- ✅ Multi-stage distroless Dockerfile + docker-compose
-- ✅ Makefile, GitHub Actions CI, golangci-lint - ready to go on day one
+- Graceful shutdown with OS signal handling
+- Structured JSON logging (slog, zerolog, or zap)
+- Your choice of HTTP framework (gin, fiber, chi, echo, gorilla/mux)
+- Viper-powered config with `.env` support
+- Optional infra clients: Redis, Kafka, NATS
+- Multi-stage distroless Dockerfile + docker-compose
+- Makefile, GitHub Actions CI, golangci-lint - ready to go on day one
 
 ---
 
@@ -197,16 +199,6 @@ my-api/
 
 ---
 
-## Philosophy
-
-**Idiomatic Go.** Generated code uses standard patterns: `context` propagation, structured logging through `slog` as default, `os.Exit(1)` on unrecoverable errors, `signal.NotifyContext` for graceful shutdown.
-
-**Minimal opinions.** goscaf picks sensible defaults but lets you override everything. Choose your framework, choose your logger, opt-in or out of every infrastructure component.
-
-**Production defaults from day one.** Every generated project includes: server timeouts, race-detected tests, a multi-stage distroless Docker build, and a CI pipeline that runs lint before merge.
-
----
-
 ## Contributing
 
 ```bash
@@ -220,9 +212,3 @@ make smoke-test
 ```
 
 PRs welcome! Please open an issue first for major changes.
-
----
-
-## License
-
-[MIT](LICENSE) © goscaf contributors

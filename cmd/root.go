@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 		color.HiWhiteString("  goscaf scaffolds production-quality Go project boilerplate.\n") +
 		color.HiBlackString("  Think create-react-app, but for Go services.\n"),
 	Version: Version,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 		// Only print banner if we are not asking for version or help
 		// and not in completion mode
 		if cmd.Name() != "help" && cmd.Name() != "completion" {
