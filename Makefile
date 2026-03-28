@@ -19,6 +19,7 @@ tidy:
 smoke-test: build
 	./bin/goscaf init smoke-test-project --defaults
 	ls smoke-test-project/
+	cd smoke-test-project/ && ../bin/goscaf add new_svc
 	rm -rf smoke-test-project/
 	@echo "Smoke test passed!"
 
