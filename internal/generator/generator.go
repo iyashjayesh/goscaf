@@ -86,6 +86,9 @@ func (g *Generator) buildSteps() []step {
 	if cfg.NATS {
 		steps = append(steps, step{path: "pkg/nats/nats.go", tmpl: templates.NatsGo})
 	}
+	if cfg.HasDB() {
+		steps = append(steps, step{path: "pkg/db/db.go", tmpl: templates.DBTemplate(string(cfg.Database))})
+	}
 
 	// DevOps files
 	if cfg.Docker {

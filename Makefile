@@ -21,7 +21,10 @@ smoke-test: build
 	ls smoke-test-project/
 	cd smoke-test-project/ && ../bin/goscaf add new_svc
 	rm -rf smoke-test-project/
-	@echo "Smoke test passed!"
+	./bin/goscaf init smoke-test-db --db postgres --defaults
+	ls smoke-test-db/pkg/db/db.go
+	rm -rf smoke-test-db/
+	@echo "Smoke tests passed!"
 
 fmt:
 	go fmt ./...
@@ -30,6 +33,7 @@ clean:
 	rm -rf bin/
 	rm -rf coverage.out
 	rm -rf smoke-test-project/
+	rm -rf smoke-test-db/
 
 install-tools:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
