@@ -23,6 +23,18 @@ const (
 	LoggerZap     Logger = "zap"
 )
 
+// Database represents the database driver choice.
+type Database string
+
+const (
+	DBPostgres Database = "postgres"
+	DBMySQL    Database = "mysql"
+	DBSQLite   Database = "sqlite"
+	DBMongo    Database = "mongo"
+	DBGORM     Database = "gorm"
+	DBNone     Database = "none"
+)
+
 // ProjectConfig holds all configuration for a new Go project.
 type ProjectConfig struct {
 	// Core
@@ -36,10 +48,11 @@ type ProjectConfig struct {
 	Logger    Logger
 
 	// Optional packages
-	Viper bool
-	Redis bool
-	Kafka bool
-	NATS  bool
+	Viper    bool
+	Redis    bool
+	Kafka    bool
+	NATS     bool
+	Database Database
 
 	// DevOps
 	Docker   bool
@@ -79,9 +92,32 @@ func (c *ProjectConfig) LoggerImport() string {
 	}
 }
 
+// DBImport returns the Go module import path for the selected database driver.
+func (c *ProjectConfig) DBImport() string {
+	switch c.Database {
+	case DBPostgres:
+		return "github.com/jackc/pgx/v5"
+	case DBMySQL:
+		return "github.com/go-sql-driver/mysql"
+	case DBSQLite:
+		return "modernc.org/sqlite"
+	case DBMongo:
+		return "go.mongodb.org/mongo-driver/mongo"
+	case DBGORM:
+		return "gorm.io/gorm"
+	default:
+		return ""
+	}
+}
+
+// HasDB returns true if a real database driver is selected.
+func (c *ProjectConfig) HasDB() bool {
+	return c.Database != "" && c.Database != DBNone
+}
+
 // HasInfra returns true if any infrastructure package is selected.
 func (c *ProjectConfig) HasInfra() bool {
-	return c.Redis || c.Kafka || c.NATS
+	return c.Redis || c.Kafka || c.NATS || c.HasDB()
 }
 
 // Validate validates the project configuration.

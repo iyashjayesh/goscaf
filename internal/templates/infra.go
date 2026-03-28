@@ -268,6 +268,269 @@ func (c *Client) Close() error {
 }
 `
 
+// DBTemplate returns the pkg/db/db.go template for the given driver keyword.
+// Returns an empty string for "none" or unknown drivers.
+func DBTemplate(db string) string {
+	switch db {
+	case "postgres":
+		return PostgresGo
+	case "mysql":
+		return MySQLGo
+	case "sqlite":
+		return SQLiteGo
+	case "mongo":
+		return MongoGo
+	case "gorm":
+		return GormGo
+	default:
+		return ""
+	}
+}
+
+// PostgresGo is the template for pkg/db/db.go (pgx driver).
+const PostgresGo = `package db
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+// DB wraps a pgx connection pool.
+type DB struct {
+	pool *pgxpool.Pool
+}
+
+// New opens a connection pool and verifies connectivity with a 5s ping.
+func New(ctx context.Context, dsn string) (*DB, error) {
+	cfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("db: parse config: %w", err)
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	pool, err := pgxpool.NewWithConfig(pingCtx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("db: connect: %w", err)
+	}
+
+	if err := pool.Ping(pingCtx); err != nil {
+		pool.Close()
+		return nil, fmt.Errorf("db: ping: %w", err)
+	}
+
+	return &DB{pool: pool}, nil
+}
+
+// Pool returns the underlying pgxpool.Pool for raw query access.
+func (d *DB) Pool() *pgxpool.Pool { return d.pool }
+
+// Close closes the connection pool.
+func (d *DB) Close() { d.pool.Close() }
+`
+
+// MySQLGo is the template for pkg/db/db.go (go-sql-driver/mysql).
+const MySQLGo = `package db
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+)
+
+// DB wraps the standard *sql.DB for MySQL.
+type DB struct {
+	sql *sql.DB
+}
+
+// New opens a MySQL connection and pings with a 5s timeout.
+func New(dsn string) (*DB, error) {
+	sqlDB, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("db: open: %w", err)
+	}
+
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := sqlDB.PingContext(ctx); err != nil {
+		_ = sqlDB.Close()
+		return nil, fmt.Errorf("db: ping: %w", err)
+	}
+
+	return &DB{sql: sqlDB}, nil
+}
+
+// SQL returns the underlying *sql.DB for raw query access.
+func (d *DB) SQL() *sql.DB { return d.sql }
+
+// Close closes the database connection.
+func (d *DB) Close() error { return d.sql.Close() }
+`
+
+// SQLiteGo is the template for pkg/db/db.go (modernc.org/sqlite).
+const SQLiteGo = `package db
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"time"
+
+	_ "modernc.org/sqlite"
+)
+
+// DB wraps the standard *sql.DB for SQLite.
+type DB struct {
+	sql *sql.DB
+}
+
+// New opens a SQLite database file and pings it.
+func New(path string) (*DB, error) {
+	sqlDB, err := sql.Open("sqlite", path)
+	if err != nil {
+		return nil, fmt.Errorf("db: open: %w", err)
+	}
+
+	// SQLite performs best with a single writer connection.
+	sqlDB.SetMaxOpenConns(1)
+	sqlDB.SetConnMaxLifetime(0)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := sqlDB.PingContext(ctx); err != nil {
+		_ = sqlDB.Close()
+		return nil, fmt.Errorf("db: ping: %w", err)
+	}
+
+	return &DB{sql: sqlDB}, nil
+}
+
+// SQL returns the underlying *sql.DB for raw query access.
+func (d *DB) SQL() *sql.DB { return d.sql }
+
+// Close closes the database file.
+func (d *DB) Close() error { return d.sql.Close() }
+`
+
+// MongoGo is the template for pkg/db/db.go (mongo-driver).
+const MongoGo = `package db
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+// DB wraps the mongo.Client.
+type DB struct {
+	client *mongo.Client
+}
+
+// New connects to MongoDB and verifies the connection with a 5s ping.
+func New(ctx context.Context, uri string) (*DB, error) {
+	opts := options.Client().ApplyURI(uri).
+		SetConnectTimeout(5 * time.Second).
+		SetServerSelectionTimeout(5 * time.Second)
+
+	client, err := mongo.Connect(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("db: connect: %w", err)
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if err := client.Ping(pingCtx, nil); err != nil {
+		_ = client.Disconnect(ctx)
+		return nil, fmt.Errorf("db: ping: %w", err)
+	}
+
+	return &DB{client: client}, nil
+}
+
+// Client returns the underlying *mongo.Client.
+func (d *DB) Client() *mongo.Client { return d.client }
+
+// Collection is a convenience helper to get a collection.
+func (d *DB) Collection(database, collection string) *mongo.Collection {
+	return d.client.Database(database).Collection(collection)
+}
+
+// Close disconnects from MongoDB.
+func (d *DB) Close(ctx context.Context) error {
+	if err := d.client.Disconnect(ctx); err != nil {
+		return fmt.Errorf("db: disconnect: %w", err)
+	}
+	return nil
+}
+`
+
+// GormGo is the template for pkg/db/db.go (GORM + postgres driver).
+const GormGo = `package db
+
+import (
+	"fmt"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+// DB wraps a gorm.DB instance.
+type DB struct {
+	gorm *gorm.DB
+}
+
+// New opens a GORM connection (postgres driver) from the given DSN.
+func New(dsn string) (*DB, error) {
+	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("db: open: %w", err)
+	}
+
+	sqlDB, err := gormDB.DB()
+	if err != nil {
+		return nil, fmt.Errorf("db: get underlying sql.DB: %w", err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("db: ping: %w", err)
+	}
+
+	return &DB{gorm: gormDB}, nil
+}
+
+// GORM returns the underlying *gorm.DB for query building.
+func (d *DB) GORM() *gorm.DB { return d.gorm }
+
+// Close closes the underlying database connection.
+func (d *DB) Close() error {
+	sqlDB, err := d.gorm.DB()
+	if err != nil {
+		return fmt.Errorf("db: get underlying sql.DB: %w", err)
+	}
+	return sqlDB.Close()
+}
+`
+
 // SwaggerYAML is the template for docs/swagger.yaml
 const SwaggerYAML = `openapi: "3.0.3"
 info:
