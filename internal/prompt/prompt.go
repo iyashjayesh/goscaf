@@ -98,7 +98,18 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 		return nil, fmt.Errorf("ask nats: %w", err)
 	}
 
-	// 9. Dockerfile + docker-compose
+	// 9. Database driver
+	dbStr := "none"
+	if err := survey.AskOne(&survey.Select{
+		Message: "Database driver:",
+		Options: []string{"none", "postgres", "mysql", "sqlite", "mongo", "gorm"},
+		Default: "none",
+	}, &dbStr); err != nil {
+		return nil, fmt.Errorf("ask database: %w", err)
+	}
+	cfg.Database = config.Database(dbStr)
+
+	// 10. Dockerfile + docker-compose
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Dockerfile + docker-compose?",
 		Default: true,
