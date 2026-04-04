@@ -18,6 +18,7 @@ var (
 	flagGoVersion string
 	flagFramework string
 	flagLogger    string
+	flagDB        string
 	flagViper     bool
 	flagRedis     bool
 	flagKafka     bool
@@ -54,6 +55,7 @@ var initCmd = &cobra.Command{
 				GoVersion:   "1.25.0",
 				Framework:   config.FrameworkGin,
 				Logger:      config.LoggerSlog,
+				Database:    config.Database(flagDB),
 				Viper:       true,
 				Redis:       false,
 				Kafka:       false,
@@ -66,7 +68,8 @@ var initCmd = &cobra.Command{
 				GitRepo:     false,
 			}
 		} else if cmd.Flags().Changed("framework") || cmd.Flags().Changed("module") ||
-			cmd.Flags().Changed("go-version") || cmd.Flags().Changed("logger") {
+			cmd.Flags().Changed("go-version") || cmd.Flags().Changed("logger") ||
+			cmd.Flags().Changed("db") {
 			// Flags provided - use flag-driven mode (merge with defaults)
 			cfg = &config.ProjectConfig{
 				ProjectName: projectName,
@@ -74,6 +77,7 @@ var initCmd = &cobra.Command{
 				GoVersion:   flagGoVersion,
 				Framework:   config.Framework(flagFramework),
 				Logger:      config.Logger(flagLogger),
+				Database:    config.Database(flagDB),
 				Viper:       flagViper,
 				Redis:       flagRedis,
 				Kafka:       flagKafka,
@@ -116,6 +120,7 @@ var initCmd = &cobra.Command{
 		color.HiWhite("  Go:        %s", cfg.GoVersion)
 		color.HiWhite("  Framework: %s", string(cfg.Framework))
 		color.HiWhite("  Logger:    %s", string(cfg.Logger))
+		color.HiWhite("  Database:  %s", string(cfg.Database))
 		color.HiCyan("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 		fmt.Println()
 
@@ -160,6 +165,7 @@ func init() {
 	initCmd.Flags().BoolVar(&flagLint, "lint", true, "Add golangci-lint config")
 	initCmd.Flags().BoolVar(&flagSwagger, "swagger", false, "Add Swagger/OpenAPI scaffold")
 	initCmd.Flags().BoolVar(&flagGitRepo, "git-repo", false, "Initialize a new git repository for this project")
+	initCmd.Flags().StringVar(&flagDB, "db", "none", "Database driver (postgres|mysql|sqlite|mongo|gorm|none)")
 	initCmd.Flags().BoolVar(&flagDefaults, "defaults", false, "Skip all prompts, use recommended defaults")
 	initCmd.Flags().StringVar(&flagOutput, "output", "", "Output directory (default: current dir)")
 

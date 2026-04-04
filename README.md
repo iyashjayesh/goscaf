@@ -24,6 +24,7 @@
 - Graceful shutdown with OS signal handling
 - Structured JSON logging (slog, zerolog, or zap)
 - Your choice of HTTP framework (gin, fiber, chi, echo, gorilla/mux)
+- Your choice of Database driver (postgres, mysql, sqlite, mongo, gorm)
 - Viper-powered config with `.env` support
 - Optional infra clients: Redis, Kafka, NATS
 - Multi-stage distroless Dockerfile + docker-compose
@@ -69,6 +70,7 @@ Sample prompt flow:
 ? Add Redis client (go-redis)? (y/N)
 ? Add Kafka client (franz-go)? (y/N)
 ? Add NATS client? (y/N)
+? Database driver: (none)
 ? Add Dockerfile + docker-compose? (Y/n)
 ? Add Makefile? (Y/n)
 ? Add GitHub Actions CI? (Y/n)
@@ -127,6 +129,7 @@ goscaf init my-api --framework fiber --logger zap --redis --kafka --docker
 | `--redis`       | `false`   | Add Redis client (go-redis/v9)                    |
 | `--kafka`       | `false`   | Add Kafka client (franz-go)                       |
 | `--nats`        | `false`   | Add NATS client                                   |
+| `--db`          | `none`    | Database driver (`postgres\|mysql\|sqlite\|mongo\|gorm\|none`) |
 | `--docker`      | `true`    | Add Dockerfile + docker-compose                   |
 | `--makefile`    | `true`    | Add Makefile                                      |
 | `--github`      | `true`    | Add GitHub Actions CI                             |
@@ -151,6 +154,7 @@ my-api/
 │   └── handler/
 │       └── handler.go           # HTTP handlers
 ├── pkg/
+│   ├── db/db.go                 # (if selected) Database connection wrapper
 │   ├── redis/redis.go           # (if selected) go-redis wrapper
 │   ├── kafka/kafka.go           # (if selected) franz-go producer+consumer
 │   └── nats/nats.go             # (if selected) NATS client wrapper
@@ -196,6 +200,20 @@ my-api/
 | `echo`       | `github.com/labstack/echo/v4`      |
 | `gorilla`    | `github.com/gorilla/mux`           |
 | `none`       | stdlib `net/http`                  |
+
+---
+
+## Supported Databases
+
+| Flag value   | Driver / Library                        |
+|--------------|-----------------------------------------|
+| `postgres`   | `github.com/jackc/pgx/v5`               |
+| `mysql`      | `github.com/go-sql-driver/mysql`        |
+| `sqlite`     | `modernc.org/sqlite`                    |
+| `mongo`      | `go.mongodb.org/mongo-driver`           |
+| `gorm`       | `gorm.io/gorm` (with Postgres driver)   |
+| `none`       | No database scaffolded                  |
+
 
 ---
 

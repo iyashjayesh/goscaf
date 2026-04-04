@@ -38,7 +38,7 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
-{{- if or .Redis .Kafka}}
+{{- if or .Redis .Kafka .Database}}
     depends_on:
 {{- if .Redis}}
       redis:
@@ -46,6 +46,19 @@ services:
 {{- end}}
 {{- if .Kafka}}
       kafka:
+        condition: service_healthy
+{{- end}}
+{{- if eq (print .Database) "postgres"}}
+      postgres:
+        condition: service_healthy
+{{- else if eq (print .Database) "gorm"}}
+      postgres:
+        condition: service_healthy
+{{- else if eq (print .Database) "mysql"}}
+      mysql:
+        condition: service_healthy
+{{- else if eq (print .Database) "mongo"}}
+      mongo:
         condition: service_healthy
 {{- end}}
 {{- end}}
@@ -93,6 +106,61 @@ services:
       - "4222:4222"
       - "8222:8222"
     restart: unless-stopped
+{{end}}{{if eq (print .Database) "postgres"}}
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: {{.ProjectName}}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{{else if eq (print .Database) "gorm"}}
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: {{.ProjectName}}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{{else if eq (print .Database) "mysql"}}
+  mysql:
+    image: mysql:8-debian
+    environment:
+      MYSQL_DATABASE: {{.ProjectName}}
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{{else if eq (print .Database) "mongo"}}
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 {{end}}
 `
 

@@ -75,6 +75,18 @@ require (
 {{- if .NATS}}
 	github.com/nats-io/nats.go v1.33.1
 {{- end}}
+{{- if eq (print .Database) "postgres"}}
+	github.com/jackc/pgx/v5 v5.7.2
+{{- else if eq (print .Database) "mysql"}}
+	github.com/go-sql-driver/mysql v1.8.1
+{{- else if eq (print .Database) "sqlite"}}
+	modernc.org/sqlite v1.33.1
+{{- else if eq (print .Database) "mongo"}}
+	go.mongodb.org/mongo-driver v1.16.0
+{{- else if eq (print .Database) "gorm"}}
+	gorm.io/gorm v1.25.12
+	gorm.io/driver/postgres v1.5.9
+{{- end}}
 )
 {{else}}
 require (
@@ -95,6 +107,18 @@ require (
 {{- end}}
 {{- if .NATS}}
 	github.com/nats-io/nats.go v1.33.1
+{{- end}}
+{{- if eq (print .Database) "postgres"}}
+	github.com/jackc/pgx/v5 v5.7.2
+{{- else if eq (print .Database) "mysql"}}
+	github.com/go-sql-driver/mysql v1.8.1
+{{- else if eq (print .Database) "sqlite"}}
+	modernc.org/sqlite v1.33.1
+{{- else if eq (print .Database) "mongo"}}
+	go.mongodb.org/mongo-driver v1.16.0
+{{- else if eq (print .Database) "gorm"}}
+	gorm.io/gorm v1.25.12
+	gorm.io/driver/postgres v1.5.9
 {{- end}}
 )
 {{end}}
@@ -153,6 +177,21 @@ KAFKA_GROUP_ID={{.ProjectName}}-consumer
 # NATS
 NATS_URL=nats://localhost:4222
 NATS_NAME={{.ProjectName}}
+{{end}}{{if eq (print .Database) "postgres"}}
+# Database
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/{{.ProjectName}}?sslmode=disable
+{{else if eq (print .Database) "mysql"}}
+# Database
+DATABASE_URL=root:password@tcp(localhost:3306)/{{.ProjectName}}?parseTime=true
+{{else if eq (print .Database) "sqlite"}}
+# Database
+DATABASE_URL={{.ProjectName}}.db
+{{else if eq (print .Database) "mongo"}}
+# Database
+DATABASE_URL=mongodb://localhost:27017
+{{else if eq (print .Database) "gorm"}}
+# Database
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/{{.ProjectName}}?sslmode=disable
 {{end}}
 `
 
@@ -185,6 +224,9 @@ type Config struct {
 {{- if .NATS}}
 	NATS  NATSConfig
 {{- end}}
+{{- if ne (print .Database) "none"}}
+	Database DatabaseConfig
+{{- end}}
 }
 
 // AppConfig holds app-level configuration.
@@ -193,7 +235,12 @@ type AppConfig struct {
 	Env  string
 	Port int
 }
-{{if .Redis}}
+{{if ne (print .Database) "none"}}
+// DatabaseConfig holds database connection configuration.
+type DatabaseConfig struct {
+	URL string
+}
+{{end}}{{if .Redis}}
 // RedisConfig holds Redis connection configuration.
 type RedisConfig struct {
 	Addr     string
@@ -240,6 +287,8 @@ func Load() (*Config, error) {
 {{end}}{{if .NATS}}
 	v.SetDefault("nats.url", "nats://localhost:4222")
 	v.SetDefault("nats.name", "{{.ProjectName}}")
+{{end}}{{if ne (print .Database) "none"}}
+	v.SetDefault("database.url", "")
 {{end}}
 
 	cfg := &Config{
@@ -263,6 +312,10 @@ func Load() (*Config, error) {
 		NATS: NATSConfig{
 			URL:  v.GetString("NATS_URL"),
 			Name: v.GetString("NATS_NAME"),
+		},
+{{end}}{{if ne (print .Database) "none"}}
+		Database: DatabaseConfig{
+			URL: v.GetString("DATABASE_URL"),
 		},
 {{end}}
 	}
@@ -313,6 +366,9 @@ type Config struct {
 {{- if .NATS}}
 	NATS  NATSConfig
 {{- end}}
+{{- if ne (print .Database) "none"}}
+	Database DatabaseConfig
+{{- end}}
 }
 
 // AppConfig holds app-level configuration.
@@ -321,7 +377,12 @@ type AppConfig struct {
 	Env  string
 	Port int
 }
-{{if .Redis}}
+{{if ne (print .Database) "none"}}
+// DatabaseConfig holds database connection configuration.
+type DatabaseConfig struct {
+	URL string
+}
+{{end}}{{if .Redis}}
 // RedisConfig holds Redis connection configuration.
 type RedisConfig struct {
 	Addr     string
@@ -358,6 +419,11 @@ func Load() (*Config, error) {
 			Env:  getEnv("APP_ENV", "development"),
 			Port: port,
 		},
+{{if ne (print .Database) "none"}}
+		Database: DatabaseConfig{
+			URL: getEnv("DATABASE_URL", ""),
+		},
+{{end}}
 	}
 
 	if err := cfg.validate(); err != nil {

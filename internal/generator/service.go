@@ -256,6 +256,7 @@ func (h *{{.StructName}}Handler) Register(rg *gin.RouterGroup) {
 // @Success     200  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
 // @Router      /{{.DirectoryName}}/health [get]
+// Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(c *gin.Context) {
 	message, err := h.service.Health(c.Request.Context())
 	if err != nil {
@@ -298,6 +299,7 @@ func (h *{{.StructName}}Handler) Register(rg fiber.Router) {
 // @Success     200  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
 // @Router      /{{.DirectoryName}}/health [get]
+// Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(c *fiber.Ctx) error {
 	message, err := h.service.Health(c.UserContext())
 	if err != nil {
@@ -341,6 +343,7 @@ func (h *{{.StructName}}Handler) Register(rg *echo.Group) {
 // @Success     200  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
 // @Router      /{{.DirectoryName}}/health [get]
+// Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(c echo.Context) error {
 	message, err := h.service.Health(c.Request().Context())
 	if err != nil {
@@ -383,6 +386,7 @@ func (h *{{.StructName}}Handler) Register(mux *http.ServeMux) {
 // @Success     200  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
 // @Router      /{{.DirectoryName}}/health [get]
+// Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.Health(r.Context())
 	if err != nil {
@@ -432,6 +436,7 @@ func (h *{{.StructName}}Handler) Register(r chi.Router) {
 // @Success     200  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
 // @Router      /{{.DirectoryName}}/health [get]
+// Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.Health(r.Context())
 	if err != nil {
@@ -481,6 +486,7 @@ func (h *{{.StructName}}Handler) Register(r *mux.Router) {
 // @Success     200  {object}  map[string]string
 // @Failure     500  {object}  map[string]string
 // @Router      /{{.DirectoryName}}/health [get]
+// Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.Health(r.Context())
 	if err != nil {
