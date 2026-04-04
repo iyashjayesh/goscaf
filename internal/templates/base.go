@@ -3,7 +3,12 @@ package templates
 import "github.com/iyashjayesh/goscaf/internal/config"
 
 // MainGo is the template for cmd/main.go
-const MainGo = `package main
+const MainGo = `{{if .Swagger}}// @title           {{.ProjectName}} API
+// @version         1.0.0
+// @description     API documentation for {{.ProjectName}}
+// @host            localhost:8080
+// @BasePath        /api/v1
+{{end}}package main
 
 import (
 	"context"
@@ -419,12 +424,15 @@ type healthResponse struct {
 	Env    string ` + "`" + `json:"env"` + "`" + `
 }
 {{if eq .Framework "gin"}}
+{{- if .Swagger}}
 // Health godoc
-// @Summary Health check
-// @Tags health
-// @Produce json
-// @Success 200 {object} healthResponse
-// @Router /health [get]
+// @Summary     Health check
+// @Description Returns service health status
+// @Tags        health
+// @Produce     json
+// @Success     200  {object}  healthResponse
+// @Router      /health [get]
+{{- end}}
 func (h *Handler) Health(c *gin.Context) {
 	c.JSON(200, healthResponse{
 		Status: "ok",
@@ -433,7 +441,15 @@ func (h *Handler) Health(c *gin.Context) {
 	})
 }
 {{else if eq .Framework "fiber"}}
-// Health returns server health status.
+{{- if .Swagger}}
+// Health godoc
+// @Summary     Health check
+// @Description Returns service health status
+// @Tags        health
+// @Produce     json
+// @Success     200  {object}  healthResponse
+// @Router      /health [get]
+{{- end}}
 func (h *Handler) Health(c *fiber.Ctx) error {
 	return c.JSON(healthResponse{
 		Status: "ok",
@@ -442,7 +458,15 @@ func (h *Handler) Health(c *fiber.Ctx) error {
 	})
 }
 {{else if eq .Framework "echo"}}
-// Health returns server health status.
+{{- if .Swagger}}
+// Health godoc
+// @Summary     Health check
+// @Description Returns service health status
+// @Tags        health
+// @Produce     json
+// @Success     200  {object}  healthResponse
+// @Router      /health [get]
+{{- end}}
 func (h *Handler) Health(c echo.Context) error {
 	return c.JSON(http.StatusOK, healthResponse{
 		Status: "ok",
@@ -451,7 +475,15 @@ func (h *Handler) Health(c echo.Context) error {
 	})
 }
 {{else}}
-// Health returns server health status.
+{{- if .Swagger}}
+// Health godoc
+// @Summary     Health check
+// @Description Returns service health status
+// @Tags        health
+// @Produce     json
+// @Success     200  {object}  healthResponse
+// @Router      /health [get]
+{{- end}}
 func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

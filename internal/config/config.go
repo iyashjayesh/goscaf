@@ -47,6 +47,7 @@ type ProjectConfig struct {
 	GitHub   bool
 	Lint     bool
 	Swagger  bool
+	GitRepo  bool
 }
 
 // FrameworkImport returns the Go module import path for the selected framework.

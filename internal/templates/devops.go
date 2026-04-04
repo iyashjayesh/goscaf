@@ -102,7 +102,7 @@ BUILD_DIR := bin
 BINARY := $(BUILD_DIR)/$(APP_NAME)
 
 .PHONY: run build test test-coverage lint fmt tidy \
-        docker-up docker-down docker-logs clean install-tools
+        docker-up docker-down docker-logs clean install-tools{{if .Swagger}} swagger{{end}}
 
 run: ## Run the application
 	go run ./cmd/main.go
@@ -144,7 +144,16 @@ clean: ## Remove build artifacts
 install-tools: ## Install dev tools
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install golang.org/x/tools/cmd/goimports@latest
-
+{{- if .Swagger}}
+	go install github.com/swaggo/swag/cmd/swag@latest
+{{- end}}
+{{if .Swagger}}
+swagger: ## Regenerate Swagger/OpenAPI documentation
+	@which swag > /dev/null 2>&1 || (echo "  → Installing swag CLI..." && go install github.com/swaggo/swag/cmd/swag@latest)
+	swag init -g cmd/main.go -o docs --parseDependency --parseInternal 2>&1 | grep -v "warning:"
+	@echo "  ✓ Swagger docs updated → docs/swagger.yaml | docs/swagger.json"
+	go mod tidy
+{{end}}
 help: ## Display this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'

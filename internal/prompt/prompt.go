@@ -138,5 +138,13 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 		return nil, fmt.Errorf("ask swagger: %w", err)
 	}
 
+	// 14. Git repository
+	if err := survey.AskOne(&survey.Confirm{
+		Message: "Initialize github repository?",
+		Default: false,
+	}, &cfg.GitRepo); err != nil {
+		return nil, fmt.Errorf("failed to initialize git repository : %w", err)
+	}
+
 	return cfg, nil
 }

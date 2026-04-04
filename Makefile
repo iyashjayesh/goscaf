@@ -21,6 +21,9 @@ smoke-test: build
 	ls smoke-test-project/
 	cd smoke-test-project/ && ../bin/goscaf add new_svc
 	rm -rf smoke-test-project/
+	./bin/goscaf init smoke-swagger-project --framework gin --swagger
+	cd smoke-swagger-project/ && make swagger
+	rm -rf smoke-swagger-project/
 	@echo "Smoke test passed!"
 
 fmt:
@@ -30,6 +33,7 @@ clean:
 	rm -rf bin/
 	rm -rf coverage.out
 	rm -rf smoke-test-project/
+	rm -rf smoke-swagger-project/
 
 install-tools:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest

@@ -52,6 +52,20 @@ func (g *Generator) Run() error {
 		color.HiGreen("  ✓ go mod tidy")
 	}
 
+	// Run git init
+	if g.cfg.GitRepo {
+		color.HiBlue("  → Initializing git repository...")
+		gitCmd := exec.CommandContext(context.Background(), "git", "init")
+		gitCmd.Dir = g.cfg.OutputDir
+		gitCmd.Stdout = os.Stdout
+		gitCmd.Stderr = os.Stderr
+		if err := gitCmd.Run(); err != nil {
+			color.Yellow("  ⚠ git init failed (you may need to run it manually): %v", err)
+		} else {
+			color.HiGreen("  ✓ git repository initialized")
+		}
+	}
+
 	return nil
 }
 
