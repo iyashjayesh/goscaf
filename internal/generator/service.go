@@ -248,6 +248,14 @@ func (h *{{.StructName}}Handler) Register(rg *gin.RouterGroup) {
 	rg.GET("/{{.DirectoryName}}/health", h.Health)
 }
 
+// Health godoc
+// @Summary     {{.StructName}} health check
+// @Description Returns {{.InputName}} service health status
+// @Tags        {{.DirectoryName}}
+// @Produce     json
+// @Success     200  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /{{.DirectoryName}}/health [get]
 // Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(c *gin.Context) {
 	message, err := h.service.Health(c.Request.Context())
@@ -283,6 +291,14 @@ func (h *{{.StructName}}Handler) Register(rg fiber.Router) {
 	rg.Get("/{{.DirectoryName}}/health", h.Health)
 }
 
+// Health godoc
+// @Summary     {{.StructName}} health check
+// @Description Returns {{.InputName}} service health status
+// @Tags        {{.DirectoryName}}
+// @Produce     json
+// @Success     200  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /{{.DirectoryName}}/health [get]
 // Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(c *fiber.Ctx) error {
 	message, err := h.service.Health(c.UserContext())
@@ -319,6 +335,14 @@ func (h *{{.StructName}}Handler) Register(rg *echo.Group) {
 	rg.GET("/{{.DirectoryName}}/health", h.Health)
 }
 
+// Health godoc
+// @Summary     {{.StructName}} health check
+// @Description Returns {{.InputName}} service health status
+// @Tags        {{.DirectoryName}}
+// @Produce     json
+// @Success     200  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /{{.DirectoryName}}/health [get]
 // Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(c echo.Context) error {
 	message, err := h.service.Health(c.Request().Context())
@@ -354,6 +378,14 @@ func (h *{{.StructName}}Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/{{.DirectoryName}}/health", h.Health)
 }
 
+// Health godoc
+// @Summary     {{.StructName}} health check
+// @Description Returns {{.InputName}} service health status
+// @Tags        {{.DirectoryName}}
+// @Produce     json
+// @Success     200  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /{{.DirectoryName}}/health [get]
 // Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.Health(r.Context())
@@ -396,6 +428,14 @@ func (h *{{.StructName}}Handler) Register(r chi.Router) {
 	r.Get("/{{.DirectoryName}}/health", h.Health)
 }
 
+// Health godoc
+// @Summary     {{.StructName}} health check
+// @Description Returns {{.InputName}} service health status
+// @Tags        {{.DirectoryName}}
+// @Produce     json
+// @Success     200  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /{{.DirectoryName}}/health [get]
 // Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.Health(r.Context())
@@ -438,6 +478,14 @@ func (h *{{.StructName}}Handler) Register(r *mux.Router) {
 	r.HandleFunc("/{{.DirectoryName}}/health", h.Health).Methods(http.MethodGet)
 }
 
+// Health godoc
+// @Summary     {{.StructName}} health check
+// @Description Returns {{.InputName}} service health status
+// @Tags        {{.DirectoryName}}
+// @Produce     json
+// @Success     200  {object}  map[string]string
+// @Failure     500  {object}  map[string]string
+// @Router      /{{.DirectoryName}}/health [get]
 // Health responds with the {{.InputName}} service health status.
 func (h *{{.StructName}}Handler) Health(w http.ResponseWriter, r *http.Request) {
 	message, err := h.service.Health(r.Context())

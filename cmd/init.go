@@ -30,6 +30,7 @@ var (
 	flagSwagger   bool
 	flagDefaults  bool
 	flagOutput    string
+	flagGitRepo   bool
 )
 
 var initCmd = &cobra.Command{
@@ -64,6 +65,7 @@ var initCmd = &cobra.Command{
 				GitHub:      true,
 				Lint:        true,
 				Swagger:     false,
+				GitRepo:     false,
 			}
 		} else if cmd.Flags().Changed("framework") || cmd.Flags().Changed("module") ||
 			cmd.Flags().Changed("go-version") || cmd.Flags().Changed("logger") ||
@@ -85,6 +87,7 @@ var initCmd = &cobra.Command{
 				GitHub:      flagGitHub,
 				Lint:        flagLint,
 				Swagger:     flagSwagger,
+				GitRepo:     flagGitRepo,
 			}
 			if cfg.ModuleName == "" {
 				cfg.ModuleName = fmt.Sprintf("github.com/your-org/%s", projectName)
@@ -161,7 +164,9 @@ func init() {
 	initCmd.Flags().BoolVar(&flagGitHub, "github", true, "Add GitHub Actions CI")
 	initCmd.Flags().BoolVar(&flagLint, "lint", true, "Add golangci-lint config")
 	initCmd.Flags().BoolVar(&flagSwagger, "swagger", false, "Add Swagger/OpenAPI scaffold")
+	initCmd.Flags().BoolVar(&flagGitRepo, "git-repo", false, "Initialize a new git repository for this project")
 	initCmd.Flags().StringVar(&flagDB, "db", "none", "Database driver (postgres|mysql|sqlite|mongo|gorm|none)")
 	initCmd.Flags().BoolVar(&flagDefaults, "defaults", false, "Skip all prompts, use recommended defaults")
 	initCmd.Flags().StringVar(&flagOutput, "output", "", "Output directory (default: current dir)")
+
 }

@@ -21,6 +21,11 @@ smoke-test: build
 	ls smoke-test-project/
 	cd smoke-test-project/ && ../bin/goscaf add new_svc
 	rm -rf smoke-test-project/
+	./bin/goscaf init smoke-swagger-project --framework gin --swagger
+	cd smoke-swagger-project/ && make swagger
+	rm -rf smoke-swagger-project/
+	@echo "Smoke test passed!"
+  
 	./bin/goscaf init smoke-test-db --db postgres --defaults
 	ls smoke-test-db/pkg/db/db.go
 	rm -rf smoke-test-db/
@@ -33,6 +38,7 @@ clean:
 	rm -rf bin/
 	rm -rf coverage.out
 	rm -rf smoke-test-project/
+	rm -rf smoke-swagger-project/
 	rm -rf smoke-test-db/
 
 install-tools:
