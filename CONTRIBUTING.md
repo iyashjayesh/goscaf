@@ -29,11 +29,17 @@ First off, thank you for considering contributing to `goscaf`! It's people like 
 4. Build the project: `make build`.
 
 ## Project Structure
-- `main.go`: Entry point.
+- `main.go`: Entry point — delegates immediately to `cmd.Execute()`.
 - `cmd/`: CLI commands (Cobra-based).
-- `internal/`: Core logic and templates.
-    - `internal/generator/`: Logic for generating files.
-    - `internal/templates/`: Project boilerplates.
+    - `cmd/root.go`: Root command and banner.
+    - `cmd/init.go`: `goscaf init` — collects config and drives the generator.
+    - `cmd/add.go`: `goscaf add` — adds a new service scaffold to an existing project.
+- `internal/`: Core logic — not importable by external packages.
+    - `internal/config/`: `ProjectConfig` struct and typed constants for framework, logger, and database choices.
+    - `internal/userconfig/`: Loads and merges `~/.goscaf.yaml` (global) and `./.goscaf.yaml` (local) defaults.
+    - `internal/prompt/`: Interactive survey prompts; accepts a `UserConfig` to pre-fill defaults.
+    - `internal/generator/`: Orchestrates file writes for `goscaf init` and `goscaf add`.
+    - `internal/templates/`: Go `text/template` strings for every generated file.
 
 ## Style Guide
 - We follow standard Go idioms.

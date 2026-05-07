@@ -6,16 +6,22 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 
 	"github.com/iyashjayesh/goscaf/internal/config"
+	"github.com/iyashjayesh/goscaf/internal/userconfig"
 )
 
 // Run runs the interactive prompt flow and returns a populated ProjectConfig.
-func Run(projectName string) (*config.ProjectConfig, error) {
+// If uc is non-nil its values are used as pre-filled defaults; the user can
+// still change any answer at the prompt.
+func Run(projectName string, uc *userconfig.UserConfig) (*config.ProjectConfig, error) {
 	cfg := &config.ProjectConfig{
 		ProjectName: projectName,
 	}
 
 	// 1. Module name
 	moduleDefault := fmt.Sprintf("github.com/your-org/%s", projectName)
+	if uc != nil && uc.ModulePrefix != "" {
+		moduleDefault = uc.ModulePrefix + "/" + projectName
+	}
 	if err := survey.AskOne(&survey.Input{
 		Message: "Module name:",
 		Default: moduleDefault,
@@ -24,22 +30,35 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	}
 
 	// 2. Go version
-	goVersionStr := "1.25.0"
+	goVersionDefault := "1.25.0"
+	if uc != nil && uc.GoVersion != "" {
+		goVersionDefault = uc.GoVersion
+	}
+	goVersionStr := goVersionDefault
 	if err := survey.AskOne(&survey.Select{
 		Message: "Go version:",
 		Options: []string{"1.25.0", "1.24.0", "1.23"},
-		Default: "1.25.0",
+		Default: goVersionDefault,
 	}, &goVersionStr); err != nil {
 		return nil, fmt.Errorf("ask go version: %w", err)
 	}
 	cfg.GoVersion = goVersionStr
 
 	// 3. HTTP framework
-	frameworkStr := "gin"
+	// The select option for gorilla is "gorilla/mux" but the config value is "gorilla".
+	frameworkDefault := "gin"
+	if uc != nil && uc.Framework != "" {
+		f := uc.Framework
+		if f == "gorilla" {
+			f = "gorilla/mux"
+		}
+		frameworkDefault = f
+	}
+	frameworkStr := frameworkDefault
 	if err := survey.AskOne(&survey.Select{
 		Message: "HTTP framework:",
 		Options: []string{"gin", "fiber", "chi", "echo", "gorilla/mux", "none"},
-		Default: "gin",
+		Default: frameworkDefault,
 	}, &frameworkStr); err != nil {
 		return nil, fmt.Errorf("ask framework: %w", err)
 	}
@@ -49,11 +68,21 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	cfg.Framework = config.Framework(frameworkStr)
 
 	// 4. Structured logger
-	loggerStr := "slog"
+	// The select option for slog is "slog (stdlib)" but the config value is "slog".
+	loggerDefault := "slog (stdlib)"
+	if uc != nil && uc.Logger != "" {
+		switch uc.Logger {
+		case "slog":
+			loggerDefault = "slog (stdlib)"
+		default:
+			loggerDefault = uc.Logger
+		}
+	}
+	loggerStr := loggerDefault
 	if err := survey.AskOne(&survey.Select{
 		Message: "Structured logger:",
 		Options: []string{"slog (stdlib)", "zerolog", "zap"},
-		Default: "slog (stdlib)",
+		Default: loggerDefault,
 	}, &loggerStr); err != nil {
 		return nil, fmt.Errorf("ask logger: %w", err)
 	}
@@ -69,7 +98,7 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	// 5. Viper
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Viper for config & env management?",
-		Default: true,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Viper }), true),
 	}, &cfg.Viper); err != nil {
 		return nil, fmt.Errorf("ask viper: %w", err)
 	}
@@ -77,7 +106,7 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	// 6. Redis
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Redis client (go-redis)?",
-		Default: false,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Redis }), false),
 	}, &cfg.Redis); err != nil {
 		return nil, fmt.Errorf("ask redis: %w", err)
 	}
@@ -85,7 +114,7 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	// 7. Kafka
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Kafka client (franz-go)?",
-		Default: false,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Kafka }), false),
 	}, &cfg.Kafka); err != nil {
 		return nil, fmt.Errorf("ask kafka: %w", err)
 	}
@@ -93,17 +122,21 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	// 8. NATS
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add NATS client?",
-		Default: false,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.NATS }), false),
 	}, &cfg.NATS); err != nil {
 		return nil, fmt.Errorf("ask nats: %w", err)
 	}
 
 	// 9. Database driver
-	dbStr := "none"
+	dbDefault := "none"
+	if uc != nil && uc.DB != "" {
+		dbDefault = uc.DB
+	}
+	dbStr := dbDefault
 	if err := survey.AskOne(&survey.Select{
 		Message: "Database driver:",
 		Options: []string{"none", "postgres", "mysql", "sqlite", "mongo", "gorm"},
-		Default: "none",
+		Default: dbDefault,
 	}, &dbStr); err != nil {
 		return nil, fmt.Errorf("ask database: %w", err)
 	}
@@ -112,50 +145,58 @@ func Run(projectName string) (*config.ProjectConfig, error) {
 	// 10. Dockerfile + docker-compose
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Dockerfile + docker-compose?",
-		Default: true,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Docker }), true),
 	}, &cfg.Docker); err != nil {
 		return nil, fmt.Errorf("ask docker: %w", err)
 	}
 
-	// 10. Makefile
+	// 11. Makefile
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Makefile?",
-		Default: true,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Makefile }), true),
 	}, &cfg.Makefile); err != nil {
 		return nil, fmt.Errorf("ask makefile: %w", err)
 	}
 
-	// 11. GitHub Actions CI
+	// 12. GitHub Actions CI
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add GitHub Actions CI?",
-		Default: true,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.GitHub }), true),
 	}, &cfg.GitHub); err != nil {
 		return nil, fmt.Errorf("ask github: %w", err)
 	}
 
-	// 12. golangci-lint config
+	// 13. golangci-lint config
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add golangci-lint config?",
-		Default: true,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Lint }), true),
 	}, &cfg.Lint); err != nil {
 		return nil, fmt.Errorf("ask lint: %w", err)
 	}
 
-	// 13. Swagger/OpenAPI scaffold
+	// 14. Swagger/OpenAPI scaffold
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Add Swagger/OpenAPI scaffold?",
-		Default: false,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.Swagger }), false),
 	}, &cfg.Swagger); err != nil {
 		return nil, fmt.Errorf("ask swagger: %w", err)
 	}
 
-	// 14. Git repository
+	// 15. Git repository
 	if err := survey.AskOne(&survey.Confirm{
 		Message: "Initialize github repository?",
-		Default: false,
+		Default: userconfig.BoolVal(ucBool(uc, func(u *userconfig.UserConfig) *bool { return u.GitRepo }), false),
 	}, &cfg.GitRepo); err != nil {
 		return nil, fmt.Errorf("failed to initialize git repository : %w", err)
 	}
 
 	return cfg, nil
+}
+
+// ucBool safely extracts a *bool field from uc, returning nil when uc is nil.
+func ucBool(uc *userconfig.UserConfig, fn func(*userconfig.UserConfig) *bool) *bool {
+	if uc == nil {
+		return nil
+	}
+	return fn(uc)
 }

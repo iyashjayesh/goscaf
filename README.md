@@ -117,6 +117,105 @@ goscaf init my-api --framework fiber --logger zap --redis --kafka --docker
 
 ---
 
+## Config file (.goscaf.yaml)
+
+Tired of answering the same prompts every time? Save your preferences once in a `.goscaf.yaml` file and `goscaf` will pre-fill every prompt with your defaults. You can still change any value at the prompt — the config just saves you the typing.
+
+### Two scopes, same format
+
+| File | Scope | Who should set it |
+|---|---|---|
+| `~/.goscaf.yaml` | Global — applies to all projects on this machine | Individual developers |
+| `./.goscaf.yaml` | Local — applies only to the current directory | Teams (commit to the repo) |
+
+When both files exist, **local values win over global**. CLI flags always win over both. The full priority chain is:
+
+```
+hardcoded defaults < ~/.goscaf.yaml < ./.goscaf.yaml < CLI flags
+```
+
+### All supported fields
+
+```yaml
+# .goscaf.yaml
+
+# Module prefix — goscaf appends /<project-name> automatically.
+# Example: "github.com/your-org" produces "github.com/your-org/my-api"
+module_prefix: github.com/your-org
+
+# Go toolchain version to write into go.mod
+go_version: "1.25.0"
+
+# HTTP framework: gin | fiber | chi | echo | gorilla | none
+framework: gin
+
+# Structured logger: slog | zerolog | zap
+logger: slog
+
+# Database driver: none | postgres | mysql | sqlite | mongo | gorm
+db: none
+
+# Optional infrastructure clients
+viper:    true
+redis:    false
+kafka:    false
+nats:     false
+
+# DevOps scaffolding
+docker:   true
+makefile: true
+github:   true
+lint:     true
+swagger:  false
+git_repo: false
+```
+
+Any field you omit falls back to the next level in the priority chain — you only need to set what you actually want to override.
+
+### Common setups
+
+**Personal global config** — sets your usual module prefix and preferred logger, nothing else:
+
+```yaml
+# ~/.goscaf.yaml
+module_prefix: github.com/john-doe
+logger: zap
+go_version: "1.25.0"
+```
+
+**Team repo config** — standardises the stack across all services; commit this file so every engineer gets the same defaults:
+
+```yaml
+# .goscaf.yaml  (committed to the monorepo root)
+module_prefix: github.com/acme-corp
+framework: chi
+logger: zerolog
+viper: true
+docker: true
+makefile: true
+github: true
+lint: true
+swagger: false
+```
+
+**Override a single field at the CLI** — team config says `framework: chi`, but you need fiber just this once:
+
+```bash
+goscaf init payments-service --framework fiber
+```
+
+The rest of the fields still come from `.goscaf.yaml`; only `framework` is overridden.
+
+### What happens in each mode
+
+| Mode | Config file applied? |
+|---|---|
+| Interactive (`goscaf init <name>`) | Yes — pre-fills prompt defaults |
+| Flag-driven (`--framework`, `--logger`, …) | Yes — fills any field not covered by a flag |
+| Defaults (`--defaults`) | No — hardcoded defaults only, config ignored |
+
+---
+
 ## Flags
 
 | Flag            | Default   | Description                                       |

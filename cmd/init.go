@@ -11,6 +11,7 @@ import (
 	"github.com/iyashjayesh/goscaf/internal/config"
 	"github.com/iyashjayesh/goscaf/internal/generator"
 	"github.com/iyashjayesh/goscaf/internal/prompt"
+	"github.com/iyashjayesh/goscaf/internal/userconfig"
 )
 
 var (
@@ -45,6 +46,13 @@ var initCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		projectName := args[0]
 
+		// Load .goscaf.yaml (global then local, local wins). A missing file is
+		// not an error — uc will be nil and prompts fall back to hardcoded defaults.
+		uc, err := userconfig.Load()
+		if err != nil {
+			color.Yellow("  ⚠ could not read .goscaf.yaml: %v", err)
+		}
+
 		var cfg *config.ProjectConfig
 
 		if flagDefaults {
@@ -70,7 +78,8 @@ var initCmd = &cobra.Command{
 		} else if cmd.Flags().Changed("framework") || cmd.Flags().Changed("module") ||
 			cmd.Flags().Changed("go-version") || cmd.Flags().Changed("logger") ||
 			cmd.Flags().Changed("db") {
-			// Flags provided - use flag-driven mode (merge with defaults)
+			// Flags provided — start from flag values, then fill in any field the
+			// user did NOT explicitly set from .goscaf.yaml (flags always win).
 			cfg = &config.ProjectConfig{
 				ProjectName: projectName,
 				ModuleName:  flagModule,
@@ -90,14 +99,21 @@ var initCmd = &cobra.Command{
 				GitRepo:     flagGitRepo,
 			}
 			if cfg.ModuleName == "" {
-				cfg.ModuleName = fmt.Sprintf("github.com/your-org/%s", projectName)
+				if uc != nil && uc.ModulePrefix != "" {
+					cfg.ModuleName = uc.ModulePrefix + "/" + projectName
+				} else {
+					cfg.ModuleName = fmt.Sprintf("github.com/your-org/%s", projectName)
+				}
+			}
+			if uc != nil {
+				applyUserConfig(cmd, cfg, uc)
 			}
 		} else {
-			// Interactive mode
-			var err error
-			cfg, err = prompt.Run(projectName)
-			if err != nil {
-				return fmt.Errorf("prompt failed: %w", err)
+			// Interactive mode — userconfig pre-fills prompt defaults.
+			var promptErr error
+			cfg, promptErr = prompt.Run(projectName, uc)
+			if promptErr != nil {
+				return fmt.Errorf("prompt failed: %w", promptErr)
 			}
 		}
 
@@ -146,6 +162,53 @@ var initCmd = &cobra.Command{
 		os.Exit(0)
 		return nil
 	},
+}
+
+// applyUserConfig fills cfg fields from uc for any flag the user did not
+// explicitly pass on the command line. CLI flags always take precedence.
+func applyUserConfig(cmd *cobra.Command, cfg *config.ProjectConfig, uc *userconfig.UserConfig) {
+	if !cmd.Flags().Changed("go-version") && uc.GoVersion != "" {
+		cfg.GoVersion = uc.GoVersion
+	}
+	if !cmd.Flags().Changed("framework") && uc.Framework != "" {
+		cfg.Framework = config.Framework(uc.Framework)
+	}
+	if !cmd.Flags().Changed("logger") && uc.Logger != "" {
+		cfg.Logger = config.Logger(uc.Logger)
+	}
+	if !cmd.Flags().Changed("db") && uc.DB != "" {
+		cfg.Database = config.Database(uc.DB)
+	}
+	if !cmd.Flags().Changed("viper") && uc.Viper != nil {
+		cfg.Viper = *uc.Viper
+	}
+	if !cmd.Flags().Changed("redis") && uc.Redis != nil {
+		cfg.Redis = *uc.Redis
+	}
+	if !cmd.Flags().Changed("kafka") && uc.Kafka != nil {
+		cfg.Kafka = *uc.Kafka
+	}
+	if !cmd.Flags().Changed("nats") && uc.NATS != nil {
+		cfg.NATS = *uc.NATS
+	}
+	if !cmd.Flags().Changed("docker") && uc.Docker != nil {
+		cfg.Docker = *uc.Docker
+	}
+	if !cmd.Flags().Changed("makefile") && uc.Makefile != nil {
+		cfg.Makefile = *uc.Makefile
+	}
+	if !cmd.Flags().Changed("github") && uc.GitHub != nil {
+		cfg.GitHub = *uc.GitHub
+	}
+	if !cmd.Flags().Changed("lint") && uc.Lint != nil {
+		cfg.Lint = *uc.Lint
+	}
+	if !cmd.Flags().Changed("swagger") && uc.Swagger != nil {
+		cfg.Swagger = *uc.Swagger
+	}
+	if !cmd.Flags().Changed("git-repo") && uc.GitRepo != nil {
+		cfg.GitRepo = *uc.GitRepo
+	}
 }
 
 func init() {
